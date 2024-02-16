@@ -94,10 +94,17 @@ class Evaluator:
 
         generations, references = self.generate_text(task_name, intermediate_generations=intermediate_generations)
 
-        if self.accelerator.is_main_process:
-            if not self.args.load_generations_path:
-                save_generations_path = f"{os.path.splitext(self.args.save_generations_path)[0]}_{task_name}.json"
-                self.save_json_files(generations, references, save_generations_path, f"references_{task_name}.json")
+        if not self.args.load_generations_path:
+            generations, references = self.generate_text(task_name, intermediate_generations=intermediate_generations)
+        else:
+            dataset = task.get_dataset()
+            # if args.limit is None, use all samples
+            # if args.limit is used, make sure args.limit_start + args.limit <= len(dataset)
+            n_tasks = min(self.args.limit, len(dataset) - self.args.limit_start) if self.args.limit else len(dataset)
+            references = [task.get_reference(dataset[i]) for i in range(self.args.limit_start, self.args.limit_start+n_tasks)]
+            with open(self.args.load_generations_path, "r") as fp:
+                generations = json.load(fp)
+                print(f"generations were loaded from {self.args.load_generations_path}")
 
             # make sure tokenizer plays nice with multiprocessing
             os.environ["TOKENIZERS_PARALLELISM"] = "false"
