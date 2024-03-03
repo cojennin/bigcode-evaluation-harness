@@ -45,6 +45,8 @@ def check_correctness(check_program, timeout, task_id, completion_id):
     if not result:
         result.append("timed out")
 
+    status = result[0]
+    print(f"Task ID: {task_id}, status: {status}")
     return dict(
         task_id=task_id,
         passed=result[0] == "passed",
