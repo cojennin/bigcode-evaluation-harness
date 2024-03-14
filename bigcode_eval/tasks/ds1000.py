@@ -181,6 +181,8 @@ class GeneralDS1000(Task):
         dataset = self.get_dataset()
         num_correct = 0
         print("Scoring generations...")
+        print("LENGTH OF GENERATIONS")
+        print(len(generations))
         for i, ref in tqdm.tqdm(enumerate(references), total=len(references)):
             test = [doc for doc in dataset if doc["reference_code"] == ref][0]
             for gen in generations[i]:
